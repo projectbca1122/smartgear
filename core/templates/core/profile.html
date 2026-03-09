@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile — SmartGear</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-50: #f9f9f9;
+            --gray-100: #efefef;
+            --gray-200: #dddddd;
+            --gray-400: #aaaaaa;
+            --gray-600: #666666;
+            --gray-800: #222222;
+            --gray-900: #111111;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── HEADER ─────────────────────────────────────────────── */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--black);
+            border-bottom: 1px solid var(--gray-800);
+            height: 64px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header .inner {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-name {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            font-size: 1.15rem;
+            color: var(--white);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--gray-800);
+            color: var(--gray-400);
+            padding: 8px 20px;
+            border-radius: 2px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .back-btn:hover { color: var(--white); border-color: var(--gray-400); }
+
+        /* ─── LAYOUT ─────────────────────────────────────────────── */
+        .profile-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 0;
+            padding-top: 64px;
+            min-height: 100vh;
+        }
+
+        /* ─── SIDEBAR ────────────────────────────────────────────── */
+        .profile-sidebar {
+            width: 280px;
+            min-width: 280px;
+            border-right: 1px solid var(--gray-800);
+            padding: 40px 28px;
+            position: sticky;
+            top: 64px;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .profile-header {
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--gray-900);
+            border: 1px solid var(--gray-800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 1.6rem;
+            color: var(--gray-400);
+        }
+
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--white);
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .profile-email {
+            color: var(--gray-600);
+            font-size: 0.78rem;
+            font-weight: 300;
+        }
+
+        /* ─── STATS ──────────────────────────────────────────────── */
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--gray-800);
+            border: 1px solid var(--gray-800);
+        }
+
+        .stat-item {
+            background: var(--black);
+            text-align: center;
+            padding: 16px 12px;
+        }
+
+        .stat-number {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--white);
+            display: block;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-weight: 500;
+        }
+
+        /* ─── SIDEBAR MENU ───────────────────────────────────────── */
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+
+        .sidebar-menu-label {
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu a {
+            color: var(--gray-400);
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: color 0.2s, background 0.2s;
+            font-size: 0.85rem;
+            font-weight: 400;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-menu a:hover { color: var(--white); background: var(--gray-900); }
+
+        .sidebar-menu a.active {
+            color: var(--white);
+            background: var(--gray-900);
+            border-color: var(--gray-800);
+        }
+
+        .sidebar-menu a i { width: 16px; text-align: center; font-size: 0.8rem; }
+
+        /* ─── MAIN CONTENT ───────────────────────────────────────── */
+        .profile-main {
+            flex: 1;
+            padding: 40px 48px;
+            min-height: calc(100vh - 64px);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 36px;
+            border-bottom: 1px solid var(--gray-800);
+            padding-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--white);
+        }
+
+        .section-count {
+            font-size: 0.72rem;
+            color: var(--gray-600);
+        }
+
+        /* ─── SECTIONS ───────────────────────────────────────────── */
+        .orders-container,
+        .wishlist-container,
+        .account-container { display: none; }
+        .orders-container.active { display: block; }
+
+        /* ─── ORDER CARDS ────────────────────────────────────────── */
+        .order-card {
+            background: var(--gray-900);
+            border: 1px solid var(--gray-800);
+            border-radius: 2px;
+            padding: 24px;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+
+        .order-card:hover { border-color: var(--gray-600); }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--gray-800);
+        }
+
+        .order-id {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--white);
+            letter-spacing: 0.04em;
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .status-pending    { background: var(--white); color: var(--black); }
+        .status-processing { background: var(--gray-200); color: var(--black); }
+        .status-shipped    { background: var(--gray-400); color: var(--black); }
+        .status-delivered  { background: var(--black); color: var(--white); border: 1px solid var(--gray-800); }
+        .status-cancelled  { background: var(--gray-800); color: var(--gray-400); }
+
+        .order-date {
+            color: var(--gray-600);
+            font-size: 0.78rem;
+            font-weight: 300;
+            margin-bottom: 16px;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            background: var(--black);
+            border: 1px solid var(--gray-800);
+            border-radius: 2px;
+            margin-bottom: 6px;
+        }
+
+        .order-item-image {
+            width: 52px;
+            height: 52px;
+            border-radius: 2px;
+            object-fit: cover;
+            background: var(--gray-800);
+            filter: grayscale(100%);
+            border: 1px solid var(--gray-800);
+        }
+
+        .order-item-name {
+            color: var(--white);
+            font-weight: 500;
+            font-size: 0.88rem;
+            margin-bottom: 3px;
+        }
+
+        .order-item-price {
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            font-weight: 300;
+        }
+
+        .order-item-quantity {
+            color: var(--gray-600);
+            font-size: 0.72rem;
+            margin-top: 2px;
+        }
+
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-800);
+            margin-top: 12px;
+        }
+
+        .order-total span:first-child {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gray-600);
+        }
+
+        .order-total-amount {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--white);
+            letter-spacing: -0.01em;
+        }
+
+        /* ─── DELETE BUTTON ─────────────────────────────────────── */
+        .delete-order-btn {
+            background: transparent;
+            border: 1px solid var(--gray-800);
+            color: var(--gray-600);
+            padding: 6px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: color 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .delete-order-btn:hover { 
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+
+        .delete-order-btn:disabled {
+            color: var(--gray-800);
+            border-color: var(--gray-800);
+            cursor: not-allowed;
+        }
+
+        /* ─── EMPTY STATE ────────────────────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--gray-600);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: block;
+            color: var(--gray-800);
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--gray-400);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 0.82rem;
+            font-weight: 300;
+            color: var(--gray-600);
+        }
+
+        /* ─── WISHLIST ───────────────────────────────────────────── */
+        .wishlist-item {
+            background: var(--gray-900);
+            border: 1px solid var(--gray-800);
+            border-radius: 2px;
+            padding: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .wishlist-item:hover { border-color: var(--gray-600); }
+
+        .wishlist-item-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--white);
+            flex-shrink: 0;
+        }
+
+        .wishlist-item-details {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .wishlist-item-image {
+            width: 52px;
+            height: 52px;
+            border-radius: 2px;
+            object-fit: cover;
+            background: var(--gray-800);
+            filter: grayscale(100%);
+            border: 1px solid var(--gray-800);
+        }
+
+        .wishlist-item-name {
+            color: var(--white);
+            font-weight: 500;
+            font-size: 0.88rem;
+            margin-bottom: 3px;
+        }
+
+        .wishlist-item-price {
+            color: var(--gray-400);
+            font-size: 0.8rem;
+            font-weight: 300;
+        }
+
+        .wishlist-item-remove {
+            background: transparent;
+            border: 1px solid var(--gray-800);
+            color: var(--gray-600);
+            padding: 6px 12px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: color 0.2s, border-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .wishlist-item-remove:hover { color: var(--white); border-color: var(--gray-400); }
+
+        .wishlist-actions {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gray-800);
+        }
+
+        .checkout-btn {
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            padding: 12px 28px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.78rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .checkout-btn:hover { background: var(--gray-200); }
+        .checkout-btn:disabled { background: var(--gray-800); color: var(--gray-600); cursor: not-allowed; }
+
+        /* ─── ACCOUNT SETTINGS ───────────────────────────────────── */
+        .account-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--gray-800);
+            border: 1px solid var(--gray-800);
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            background: var(--black);
+            padding: 20px 24px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            color: var(--white);
+            font-size: 0.92rem;
+            font-weight: 400;
+        }
+
+        /* ─── NOTIFICATION ───────────────────────────────────────── */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--white);
+            color: var(--black);
+            padding: 12px 20px;
+            border-radius: 2px;
+            z-index: 4000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            max-width: 300px;
+            animation: slideInRight 0.25s ease;
+        }
+
+        .notification.error {
+            background: var(--black);
+            color: var(--white);
+            border: 1px solid var(--gray-600);
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ─── MOBILE ─────────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .profile-container { flex-direction: column; }
+            .profile-sidebar {
+                width: 100%;
+                min-width: 0;
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-800);
+                padding: 24px 20px;
+            }
+            .profile-main { padding: 28px 20px; }
+            .account-grid { grid-template-columns: 1fr; }
+            .header .inner { padding: 0 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="inner">
+            <span class="brand-name" onclick="window.location.href='/'">SmartGear</span>
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </header>
+
+    <!-- PROFILE CONTAINER -->
+    <div class="profile-container">
+
+        <!-- SIDEBAR -->
+        <aside class="profile-sidebar">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <div class="profile-email" id="profileEmail">Loading...</div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalOrders">0</span>
+                    <span class="stat-label">Orders</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="totalSpent">₹0</span>
+                    <span class="stat-label">Spent</span>
+                </div>
+            </div>
+
+            <div>
+                <p class="sidebar-menu-label">Navigation</p>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="#" class="active" onclick="showSection('orders'); return false;">
+                            <i class="fas fa-shopping-bag"></i> My Orders
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('wishlist'); return false;">
+                            <i class="fas fa-heart"></i> My Wishlist
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showSection('account'); return false;">
+                            <i class="fas fa-user-cog"></i> Account Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="profile-main">
+
+            <!-- Orders -->
+            <div id="ordersSection" class="orders-container active">
+                <div class="section-header">
+                    <span class="section-title">My Orders</span>
+                    <span class="section-count" id="ordersCount"></span>
+                </div>
+                <div id="ordersList">
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3>No orders yet</h3>
+                        <p>Start shopping to see your orders here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wishlist -->
+            <div id="wishlistSection" class="wishlist-container">
+                <div class="section-header">
+                    <span class="section-title">My Wishlist</span>
+                    <span class="section-count" id="wishlistCount"></span>
+                </div>
+                <div id="wishlistList">
+                    <div class="empty-state">
+                        <i class="fas fa-heart"></i>
+                        <h3>Your wishlist is empty</h3>
+                        <p>Save items you love and order them anytime.</p>
+                    </div>
+                </div>
+                <div class="wishlist-actions">
+                    <button class="checkout-btn" onclick="createOrderFromWishlist()">
+                        <i class="fas fa-plus"></i> Add Selected to Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- Account -->
+            <div id="accountSection" class="account-container">
+                <div class="section-header">
+                    <span class="section-title">Account Settings</span>
+                </div>
+                <div class="account-grid">
+                    <div class="info-item">
+                        <label>Full Name</label>
+                        <div class="info-value" id="accountName">—</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Email</label>
+                        <div class="info-value" id="accountEmail">—</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Gender</label>
+                        <div class="info-value" id="accountGender">—</div>
+                    </div>
+                    <div class="info-item">
+                        <label>Member Since</label>
+                        <div class="info-value" id="memberSince">—</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let orders = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserSession();
+            updateProfileInfo();
+            loadOrders();
+            loadWishlist();
+        });
+
+        function loadUserSession() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) currentUser = JSON.parse(saved);
+            else window.location.href = '/';
+        }
+
+        function updateProfileInfo() {
+            if (!currentUser) return;
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('accountName').textContent = currentUser.name;
+            document.getElementById('accountEmail').textContent = currentUser.email;
+            document.getElementById('accountGender').textContent = currentUser.gender ? currentUser.gender.charAt(0).toUpperCase() + currentUser.gender.slice(1) : '—';
+            document.getElementById('memberSince').textContent = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function showSection(section) {
+            ['ordersSection', 'wishlistSection', 'accountSection'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = 'none'; el.classList.remove('active'); }
+            });
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+
+            const map = { orders: 0, wishlist: 1, account: 2 };
+            const sectionMap = { orders: 'ordersSection', wishlist: 'wishlistSection', account: 'accountSection' };
+            const el = document.getElementById(sectionMap[section]);
+            if (el) { el.style.display = 'block'; el.classList.add('active'); }
+            const links = document.querySelectorAll('.sidebar-menu a');
+            if (links[map[section]]) links[map[section]].classList.add('active');
+        }
+
+        // ── Orders ────────────────────────────────────────────────
+        function loadOrders() {
+            if (!currentUser) return;
+            fetch(`/api/get-orders/?user_id=${currentUser.id}`, {
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }
+            })
+            .then(r => r.json())
+            .then(data => { orders = data.orders || []; displayOrders(); updateStats(); })
+            .catch(() => showEmptyOrders());
+        }
+
+        function displayOrders() {
+            const el = document.getElementById('ordersList');
+            document.getElementById('ordersCount').textContent = `${orders.length} order${orders.length !== 1 ? 's' : ''}`;
+            if (!orders.length) { showEmptyOrders(); return; }
+            el.innerHTML = orders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-id">Order #${order.id}</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="order-status ${getStatusClass(order.status)}">${order.status}</span>
+                            <button class="delete-order-btn" onclick="deleteOrder(${order.id})" ${order.status === 'processing' || order.status === 'shipped' ? 'disabled' : ''}>
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="order-date">Placed on ${new Date(order.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <img src="${item.product.image_url || 'https://via.placeholder.com/52x52'}" alt="${item.product.name}" class="order-item-image">
+                                <div class="order-item-details">
+                                    <div class="order-item-name">${item.product.name}</div>
+                                    <div class="order-item-price">₹${item.product.price}</div>
+                                    <div class="order-item-quantity">Qty: ${item.quantity}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-total">
+                        <span>Total</span>
+                        <span class="order-total-amount">₹${order.total}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showEmptyOrders() {
+            document.getElementById('ordersList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h3>No orders yet</h3>
+                    <p>Start shopping to see your orders here.</p>
+                </div>`;
+        }
+
+        function getStatusClass(status) {
+            return { pending: 'status-pending', processing: 'status-processing', shipped: 'status-shipped', delivered: 'status-delivered', cancelled: 'status-cancelled' }[status.toLowerCase()] || 'status-pending';
+        }
+
+        function updateStats() {
+            const total = orders.reduce((s, o) => s + parseFloat(o.total), 0);
+            document.getElementById('totalOrders').textContent = orders.length;
+            document.getElementById('totalSpent').textContent = `₹${total.toFixed(0)}`;
+        }
+
+        function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+                return;
+            }
+            
+            const btn = document.querySelector(`button[onclick="deleteOrder(${orderId})"]`);
+            if (btn) btn.disabled = true;
+            
+            fetch('/api/delete-order/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ order_id: orderId, user_id: currentUser.id })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Order deleted successfully', 'success');
+                    loadOrders(); // Reload orders to update the list and stats
+                } else {
+                    showNotification(data.error || 'Failed to delete order', 'error');
+                    if (btn) btn.disabled = false;
+                }
+            })
+            .catch(() => {
+                showNotification('Failed to delete order', 'error');
+                if (btn) btn.disabled = false;
+            });
+        }
+
+        // ── Wishlist ──────────────────────────────────────────────
+        function loadWishlist() {
+            if (!currentUser) return;
+            fetch(`/api/get-wishlist/?user_id=${currentUser.id}`, {
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }
+            })
+            .then(r => r.json())
+            .then(data => displayWishlist(data.items || []))
+            .catch(() => showEmptyWishlist());
+        }
+
+        function displayWishlist(items) {
+            const el = document.getElementById('wishlistList');
+            document.getElementById('wishlistCount').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+            if (!items.length) { showEmptyWishlist(); return; }
+            el.innerHTML = items.map(item => `
+                <div class="wishlist-item">
+                    <input type="checkbox" class="wishlist-item-checkbox" value="${item.id}" id="wishlist-check-${item.id}">
+                    <div class="wishlist-item-details">
+                        <img src="${item.product.image_url || 'https://via.placeholder.com/52x52'}" alt="${item.product.name}" class="wishlist-item-image">
+                        <div class="wishlist-item-info">
+                            <div class="wishlist-item-name">${item.product.name}</div>
+                            <div class="wishlist-item-price">₹${item.product.price}</div>
+                        </div>
+                    </div>
+                    <button class="wishlist-item-remove" onclick="removeFromWishlist(${item.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function showEmptyWishlist() {
+            document.getElementById('wishlistList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-heart"></i>
+                    <h3>Your wishlist is empty</h3>
+                    <p>Save items you love and order them anytime.</p>
+                </div>`;
+        }
+
+        function removeFromWishlist(id) {
+            fetch('/api/remove-from-wishlist/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ wishlist_id: id })
+            })
+            .then(r => r.json())
+            .then(data => { if (data.success) { showNotification('Removed from wishlist', 'success'); loadWishlist(); } else showNotification('Failed to remove', 'error'); });
+        }
+
+        function createOrderFromWishlist() {
+            const checked = document.querySelectorAll('.wishlist-item-checkbox:checked');
+            if (!checked.length) { showNotification('Please select items first', 'error'); return; }
+            const ids = Array.from(checked).map(c => c.value);
+            fetch('/api/create-order-from-wishlist/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({ wishlist_ids: ids, user_id: currentUser.id })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) { showNotification(`Order #${data.order_id} placed — ₹${data.total}`, 'success'); loadWishlist(); loadOrders(); }
+                else showNotification(data.error || 'Failed to create order', 'error');
+            });
+        }
+
+        // ── Utils ─────────────────────────────────────────────────
+        function getCookie(name) {
+            let v = null;
+            document.cookie.split(';').forEach(c => { c = c.trim(); if (c.startsWith(name + '=')) v = decodeURIComponent(c.substring(name.length + 1)); });
+            return v;
+        }
+
+        function showNotification(message, type = 'info') {
+            const n = document.createElement('div');
+            n.className = `notification${type === 'error' ? ' error' : ''}`;
+            n.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'info-circle'}"></i> ${message}`;
+            document.body.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; n.style.transition = 'opacity 0.3s'; setTimeout(() => document.body.removeChild(n), 300); }, 3000);
+        }
+
+        // Polling
+        setInterval(() => { if (currentUser) loadOrders(); }, 30000);
+    </script>
+</body>
+</html>

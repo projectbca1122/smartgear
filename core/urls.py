@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('profile/', views.profile, name='profile'),
     path('api/voice-assistant/', views.voice_assistant, name='voice_assistant'),
     path('api/text-to-speech/', views.text_to_speech, name='text_to_speech'),
     path('api/products/', views.get_products, name='get_products'),
@@ -19,4 +20,17 @@ urlpatterns = [
     path('api/get-cart/', views.get_cart, name='get_cart'),
     path('api/update-cart-item/', views.update_cart_item, name='update_cart_item'),
     path('api/remove-from-cart/', views.remove_from_cart, name='remove_from_cart'),
+    
+    # Order URLs
+    path('api/get-orders/', views.get_orders, name='get_orders'),
+    path('api/create-order/', views.create_order_from_cart, name='create_order_from_cart'),
+    path('api/update-order/', views.update_order_status, name='update_order_status'),
+    path('api/delete-order/', views.delete_order, name='delete_order'),
+    
+    # Wishlist URLs
+    path('api/add-to-wishlist/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('api/get-wishlist/', views.get_wishlist, name='get_wishlist'),
+    path('api/remove-from-wishlist/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    path('api/create-order-from-wishlist/', views.create_order_from_wishlist, name='create_order_from_wishlist'),
+    path('api/move-wishlist-to-cart/', views.move_wishlist_to_cart, name='move_wishlist_to_cart'),
 ]

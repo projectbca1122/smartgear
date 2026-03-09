@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, User, Cart, CartItem, OTP
+from .models import Product, User, Cart, CartItem, OTP, Order, OrderItem, Wishlist
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -75,5 +75,40 @@ class OTPAdmin(admin.ModelAdmin):
     list_display = ('email', 'otp', 'is_used', 'created_at')
     list_filter = ('is_used', 'created_at')
     search_fields = ('email',)
+    ordering = ('-created_at',)
+    readonly_fields = ('created_at',)
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'status', 'total', 'created_at', 'updated_at')
+    list_filter = ('status', 'created_at', 'user')
+    search_fields = ('user__name', 'user__email', 'id')
+    list_editable = ('status',)
+    ordering = ('-created_at',)
+    readonly_fields = ('created_at', 'updated_at', 'total')
+    
+    fieldsets = (
+        ('Order Information', {
+            'fields': ('user', 'session_id', 'status', 'total')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'product', 'quantity', 'price', 'item_total')
+    list_filter = ('order__created_at', 'product__category')
+    search_fields = ('order__id', 'product__name')
+    list_editable = ('quantity',)
+    ordering = ('-order__created_at',)
+    readonly_fields = ('order', 'product', 'price')
+
+@admin.register(Wishlist)
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('user__name', 'user__email', 'product__name')
     ordering = ('-created_at',)
     readonly_fields = ('created_at',)
