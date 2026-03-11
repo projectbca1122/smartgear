@@ -1664,9 +1664,10 @@
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" class="form-control" id="signupEmail" placeholder="email@example.com">
+                        <input type="email" class="form-control" id="signupEmail" placeholder="email@example.com" oninput="showProceedButton()" onblur="validateEmailFormat()">
+                        <div id="emailValidationMessage" style="font-size: 0.8rem; margin-top: 5px;"></div>
                     </div>
-                    <button class="auth-btn" onclick="sendOTP()">Send OTP</button>
+                    <button class="auth-btn" id="proceedBtn" style="display: none;" onclick="proceedWithEmail()">Proceed</button>
                     <div id="otpSection" style="display:none;">
                         <div class="form-group">
                             <label>Enter OTP</label>
@@ -2226,6 +2227,128 @@
             document.getElementById('signinForm').classList.toggle('active', tab === 'signin');
         }
 
+        function showSigninForm() {
+            switchAuthTab('signin');
+            // Pre-fill the signin email with the signup email
+            const signupEmail = document.getElementById('signupEmail').value;
+            if (signupEmail) {
+                document.getElementById('signinEmail').value = signupEmail;
+            }
+        }
+
+        function showProceedButton() {
+            const email = document.getElementById('signupEmail').value;
+            const proceedBtn = document.getElementById('proceedBtn');
+            
+            if (email.length > 0) {
+                proceedBtn.style.display = 'block';
+            } else {
+                proceedBtn.style.display = 'none';
+            }
+        }
+
+        function validateEmailFormat() {
+            const email = document.getElementById('signupEmail').value;
+            const messageDiv = document.getElementById('emailValidationMessage');
+            
+            if (!email) {
+                messageDiv.innerHTML = '';
+                return false;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                messageDiv.innerHTML = '<span style="color: #ff6b6b;">Please enter a valid email address</span>';
+                return false;
+            } else {
+                messageDiv.innerHTML = '';
+                return true;
+            }
+        }
+
+        function proceedWithEmail() {
+            const email = document.getElementById('signupEmail').value;
+            const proceedBtn = document.getElementById('proceedBtn');
+            const messageDiv = document.getElementById('emailValidationMessage');
+            
+            // First validate email format
+            if (!validateEmailFormat()) {
+                return;
+            }
+            
+            // Show processing state
+            const originalText = proceedBtn.textContent;
+            proceedBtn.textContent = 'Checking...';
+            proceedBtn.disabled = true;
+            
+            // Check if user exists
+            fetch('/api/check-user-exists/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    messageDiv.innerHTML = '<span style="color: #ff6b6b;">This email is already registered. <a href="#" onclick="showSigninForm()" style="color: #4dabf7;">Sign in instead</a></span>';
+                    proceedBtn.textContent = originalText;
+                    proceedBtn.disabled = false;
+                } else {
+                    // Email is available, now send OTP
+                    messageDiv.innerHTML = '<span style="color: #51cf66;">Email available. Sending OTP...</span>';
+                    
+                    // Call sendOTP function with the email
+                    sendOTPForEmail(email);
+                }
+            })
+            .catch(error => {
+                messageDiv.innerHTML = '<span style="color: #ff6b6b;">Error checking email. Please try again.</span>';
+                proceedBtn.textContent = originalText;
+                proceedBtn.disabled = false;
+            });
+        }
+
+        function sendOTPForEmail(email) {
+            const proceedBtn = document.getElementById('proceedBtn');
+            const messageDiv = document.getElementById('emailValidationMessage');
+            
+            fetch('/api/send-otp/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.innerHTML = '<span style="color: #51cf66;">OTP sent! Check your email.</span>';
+                    proceedBtn.style.display = 'none';
+                    
+                    // Show OTP section
+                    document.getElementById('otpSection').style.display = 'block';
+                    
+                    // Focus on first OTP input
+                    setTimeout(() => {
+                        document.getElementById('otp1').focus();
+                    }, 100);
+                } else {
+                    messageDiv.innerHTML = '<span style="color: #ff6b6b;">Failed to send OTP. Please try again.</span>';
+                    proceedBtn.textContent = 'Proceed';
+                    proceedBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                messageDiv.innerHTML = '<span style="color: #ff6b6b;">Error sending OTP. Please try again.</span>';
+                proceedBtn.textContent = 'Proceed';
+                proceedBtn.disabled = false;
+            });
+        }
+
         function toggleSigninMethod() {
             const m = document.getElementById('signinMethod').value;
             document.getElementById('passwordSignin').style.display = m === 'password' ? 'block' : 'none';
@@ -2266,7 +2389,21 @@
             const data = { email: document.getElementById('signupEmail').value, name: document.getElementById('signupName').value, gender: document.getElementById('signupGender').value, password: document.getElementById('signupPassword').value, otp: getOTPValues('otp') };
             if (!data.email || !data.name || !data.otp) { showNotification('Please fill all fields', 'error'); return; }
             fetch('/api/verify-otp-signup/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify(data) })
-            .then(r => r.json()).then(d => { if (d.success) { currentUser = d.user; saveUserSession(); showNotification('Account created!', 'success'); closeAuthModal(); updateSigninButton(); loadCart(); speakText(`Hey ${d.user.name}, welcome to SmartGear`); } else showNotification(d.error || 'Failed to create account', 'error'); });
+            .then(r => r.json()).then(d => { 
+                if (d.success) { 
+                    currentUser = d.user; 
+                    saveUserSession(); 
+                    showNotification('Account created successfully! Signing you in...', 'success'); 
+                    closeAuthModal(); 
+                    updateSigninButton(); 
+                    loadCart(); 
+                    speakText(`Hey ${d.user.name}, welcome to SmartGear`);
+                    // Refresh page after successful signup
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else showNotification(d.error || 'Failed to create account', 'error'); 
+            });
         }
 
         function signinWithPassword() {

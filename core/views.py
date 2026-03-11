@@ -693,6 +693,27 @@ def hash_password(password):
 
 @csrf_exempt
 @require_http_methods(["POST"])
+def check_user_exists(request):
+    try:
+        data = json.loads(request.body)
+        email = data.get('email')
+        
+        if not email:
+            return JsonResponse({'error': 'Email is required'}, status=400)
+        
+        # Check if user already exists
+        user_exists = User.objects.filter(email=email).exists()
+        
+        return JsonResponse({
+            'exists': user_exists,
+            'message': 'User already exists' if user_exists else 'Email available'
+        })
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_http_methods(["POST"])
 def send_otp(request):
     try:
         data = json.loads(request.body)
@@ -765,7 +786,16 @@ def verify_otp_and_signup(request):
         otp_obj.is_used = True
         otp_obj.save()
         
-        return JsonResponse({'success': True, 'message': 'Account created successfully'})
+        return JsonResponse({
+            'success': True, 
+            'message': 'Account created successfully',
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'email': user.email,
+                'gender': user.gender
+            }
+        })
     
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

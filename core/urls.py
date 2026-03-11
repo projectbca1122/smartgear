@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/products/', views.get_products, name='get_products'),
     
     # Authentication URLs
+    path('api/check-user-exists/', views.check_user_exists, name='check_user_exists'),
     path('api/send-otp/', views.send_otp, name='send_otp'),
     path('api/verify-otp-signup/', views.verify_otp_and_signup, name='verify_otp_and_signup'),
     path('api/signin-password/', views.signin_with_password, name='signin_with_password'),
