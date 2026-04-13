@@ -18,7 +18,7 @@ import re
 from datetime import timedelta, datetime
 
 # Configure Gemini API
-API_KEY = "AIzaSyBAL6xjruJ20Qn7unR-Kjo2GocqL8LonzU"
+API_KEY = "AIzaSyCpTKtmwqB5GD9Yt7DauUstR4WvtAAzIwk"
 configure(api_key=API_KEY)
 model = GenerativeModel("gemini-2.5-flash")
 
@@ -38,6 +38,14 @@ def _get_tts_engine():
         except Exception:
             pass
     return _tts_engine
+
+# Conversation memory and context
+user_context = {}
+
+def extract_name(message):
+    """Extract user name from message"""
+    match = re.search(r"my name is (\w+)", message.lower())
+    return match.group(1).capitalize() if match else None
 
 def get_weather_info(location):
     """Get weather information for a location using OpenWeatherMap API - enhanced for any city/country"""
@@ -145,6 +153,37 @@ def get_weather_info(location):
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
+def extract_intent_with_gemini(user_message):
+    try:
+        prompt = f"""
+        You are an AI fashion assistant.
+
+        Extract structured data from this user query:
+        "{user_message}"
+
+        Return ONLY JSON (no explanation):
+
+        {{
+            "location": "",
+            "activity": "",
+            "product_type": "",
+            "temperature_preference": "hot/cold/moderate"
+        }}
+        """
+
+        response = model.generate_content(prompt)
+
+        text = response.text.strip()
+
+        # CLEAN JSON (Gemini sometimes adds ```json)
+        text = text.replace("```json", "").replace("```", "").strip()
+
+        return json.loads(text)
+
+    except Exception as e:
+        print("Gemini error:", e)
+        return None
+
 def extract_location_from_message(message):
     """Extract location names from user message - enhanced to handle any city/country"""
     message_lower = message.lower()
@@ -215,96 +254,33 @@ def extract_location_from_message(message):
     
     return potential_locations[:1] if potential_locations else None
 
-def get_weather_based_products(weather_info, user_message):
+def get_weather_based_products(weather_info, user_message, base_products=None):
     """Get product recommendations based on weather conditions"""
     temp = weather_info['temperature']
     description = weather_info['description'].lower()
     location = weather_info.get('location', '').lower()
     
-    # Base query for weather-appropriate products
-    weather_conditions = []
-    
-    # Temperature-based recommendations
-    if temp < 10:
-        weather_conditions.extend(['warm', 'winter', 'fleece', 'jacket', 'sweater', 'insulated'])
-    elif temp < 20:
-        weather_conditions.extend(['light jacket', 'sweater', 'long sleeve', 'layered'])
-    elif temp < 30:
-        weather_conditions.extend(['comfortable', 'breathable', 'cotton', 'lightweight'])
-    else:
-        weather_conditions.extend(['summer', 'lightweight', 'breathable', 'shorts', 'linen', 'moisture wicking'])
-    
-    # Weather description-based recommendations
-    if 'rain' in description or 'drizzle' in description or 'shower' in description:
-        weather_conditions.extend(['waterproof', 'rain', 'quick dry', 'water resistant'])
-    elif 'snow' in description:
-        weather_conditions.extend(['waterproof', 'insulated', 'snow', 'winter', 'thermal'])
-    elif 'clear' in description or 'sunny' in description:
-        weather_conditions.extend(['uv protection', 'sun', 'hat', 'sunglasses', 'light colored'])
-    elif 'cloud' in description or 'overcast' in description:
-        weather_conditions.extend(['comfortable', 'versatile', 'all weather'])
-    elif 'hot' in description or temp > 35:
-        weather_conditions.extend(['cooling', 'ventilated', 'safari', 'sun protection'])
-    
-    # Location-specific recommendations
-    if 'africa' in location or any(african_loc in location for african_loc in ['kenya', 'nairobi', 'tanzania', 'kilimanjaro']):
-        weather_conditions.extend(['safari', 'adventure', 'outdoor', 'durable', 'neutral colors', 'insect resistant'])
-    elif 'egypt' in location or 'cairo' in location or 'morocco' in location or 'marrakech' in location:
-        weather_conditions.extend(['desert', 'breathable', 'loose fitting', 'sun protection', 'cultural'])
-    elif 'south africa' in location or 'cape town' in location or 'johannesburg' in location:
-        weather_conditions.extend(['versatile', 'all season', 'outdoor', 'casual elegant'])
-    
-    # Also extract activity keywords from user message
-    activity_keywords = []
-    activities = [
-        'hiking', 'trekking', 'running', 'gym', 'workout', 'casual', 'formal', 
-        'party', 'beach', 'travel', 'safari', 'adventure', 'desert', 'mountain',
-        'wildlife', 'photography', 'camping', 'city tour', 'business'
-    ]
-    message_lower = user_message.lower()
-    
-    for activity in activities:
-        if activity in message_lower:
-            activity_keywords.append(activity)
-    
-    # Build product query
-    products = Product.objects.all()
+    # Use base_products if provided, otherwise get all
+    products = base_products if base_products is not None else Product.objects.all()
     relevant_products = []
     
     for product in products:
         product_text = f"{product.name.lower()} {product.description.lower()} {product.suitable_locations.lower()}"
-        score = 0
         
-        # Weather condition matching
-        for condition in weather_conditions:
-            if condition in product_text:
-                score += 2
+        # HARD FILTER FIRST (THIS IS THE FIX)
+        if temp < 10:
+            if not any(word in product_text for word in ['jacket', 'thermal', 'winter', 'hoodie', 'sweater']):
+                continue
+        elif temp < 20:
+            if not any(word in product_text for word in ['jacket', 'full sleeve', 'layer']):
+                continue
+        elif temp > 30:
+            if not any(word in product_text for word in ['shorts', 'tshirt', 'summer', 'light']):
+                continue
         
-        # Activity matching
-        for activity in activity_keywords:
-            if activity in product_text:
-                score += 3
-        
-        # Location matching
-        locations = extract_location_from_message(user_message)
-        if locations:
-            for location in locations:
-                if location in product_text:
-                    score += 4
-        
-        # Africa-specific matching
-        if 'africa' in message_lower:
-            africa_keywords = ['safari', 'adventure', 'outdoor', 'travel', 'durable', 'neutral']
-            for keyword in africa_keywords:
-                if keyword in product_text:
-                    score += 3
-        
-        if score > 0:
-            relevant_products.append((product, score))
+        relevant_products.append(product)
     
-    # Sort by score and return top products
-    relevant_products.sort(key=lambda x: x[1], reverse=True)
-    return [product for product, score in relevant_products[:8]]
+    return relevant_products[:8]
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -316,14 +292,33 @@ def voice_assistant(request):
         if not user_message:
             return JsonResponse({'error': 'No message provided'}, status=400)
         
-        # Get AI response
-        ai_response = get_ai_response(user_message)
+        # Extract location and get weather first
+        locations = extract_location_from_message(user_message)
+        weather_info = None
         
-        # Use the same product logic as AI response for consistency
+        if locations:
+            weather_info = get_weather_info(locations[0])
+        
+        # Get products using consistent logic
         products = get_consistent_products(user_message)
+        
+        # Generate AI response with weather context
+        if weather_info and weather_info.get('success'):
+            try:
+                ai_response = generate_chat_response(user_message, weather_info, products)
+                temperature = weather_info.get('temperature')
+            except Exception as e:
+                # Gemini failed, use fallback with temperature
+                print(f"Gemini chat failed: {e}")
+                ai_response = get_ai_response_with_temp(user_message, weather_info)
+                temperature = weather_info.get('temperature')
+        else:
+            ai_response = get_ai_response(user_message)
+            temperature = None
         
         response_data = {
             'ai_response': ai_response,
+            'temperature': temperature,
             'products': [
                 {
                     'id': product.id,
@@ -343,53 +338,182 @@ def voice_assistant(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 def get_consistent_products(user_message):
-    """Get products using the same logic as AI response for consistency"""
-    user_message_lower = user_message.lower().strip()
+    """Get products using AI-driven structured intent extraction"""
+    # Extract structured intent using Gemini
+    intent = extract_intent_with_gemini(user_message)
     
-    # Enhanced location and weather detection
-    locations = extract_location_from_message(user_message)
+    if not intent:
+        # Fallback to old method if AI fails
+        return find_relevant_products(user_message)[:8]
     
-    # Travel/going indicators
-    travel_indicators = ['going to', 'visiting', 'traveling to', 'trip to', 'going for', 'planning to', 'heading to', 'moving to']
-    # Also handle direct location requests
-    location_request_indicators = ['products for', 'suggest me', 'show me', 'recommend', 'what to wear', 'what should i wear', 'gear for']
+    location = intent.get("location")
+    activity = intent.get("activity")
+    product_type = intent.get("product_type")
+    temp_preference = intent.get("temperature_preference")
     
-    is_travel_query = any(indicator in user_message_lower for indicator in travel_indicators)
-    is_location_request = any(indicator in user_message_lower for indicator in location_request_indicators)
+    # Start with all products
+    products = Product.objects.all()
     
-    # Check if this is a location-based request (either travel or direct location request)
-    if locations and (is_travel_query or is_location_request):
-        # Get weather for mentioned location
-        location = locations[0]  # Use first mentioned location
+    # STRICT FILTER FIRST (PRIORITY ORDER)
+    # 1. Product Type (highest priority)
+    if product_type:
+        products = products.filter(
+            Q(category__icontains=product_type) |
+            Q(name__icontains=product_type)
+        )
+    
+    # 2. Activity (second priority)
+    if activity:
+        products = products.filter(
+            Q(category__icontains=activity) |
+            Q(description__icontains=activity) |
+            Q(suitable_locations__icontains=activity)
+        )
+    
+    # 3. Location (third priority)
+    if location:
+        products = products.filter(
+            Q(suitable_locations__icontains=location)
+        )
+    
+    # 4. Weather (last filter, ONLY if results exist)
+    if location and products.exists():
         weather_info = get_weather_info(location)
-        
         if weather_info['success']:
-            # Get weather-based product recommendations
-            weather_products = get_weather_based_products(weather_info, user_message)
+            # Apply temperature-based hard filtering to already filtered products
+            weather_products = get_weather_based_products(weather_info, user_message, products)
             if weather_products:
-                return weather_products[:8]  # Return same number as AI response
+                return weather_products[:8]
     
-    # Fallback to regular product search
-    return find_relevant_products(user_message)[:8]
+    # Return filtered results or fallback
+    result = products[:8] if products.exists() else find_relevant_products(user_message)[:8]
+    return result
+
+def generate_chat_response(user_message, weather_info, products):
+    try:
+        name = user_context.get("name", "")
+        product_names = [p.name for p in products[:3]]
+
+        prompt = f"""
+You are a human-like fashion assistant.
+
+User: {user_message}
+Name: {name}
+
+Weather:
+{weather_info['temperature']}°C, {weather_info['description']}
+
+Products:
+{product_names}
+
+Respond like a real stylist:
+- No lists
+- No numbering
+- Talk naturally
+- Mention temperature casually
+- Recommend 1–2 items only
+- Ask a follow-up question
+
+Example tone:
+"Hey, it's quite cold there around 5°C, so I'd definitely go with something warm like a jacket or hoodie. Do you prefer something more stylish or sporty?"
+"""
+
+        res = model.generate_content(prompt)
+        return res.text
+
+    except:
+        # Check if we have weather info to include temperature
+        if weather_info and weather_info.get('success'):
+            temp = weather_info.get('temperature')
+            location = weather_info.get('location', 'your destination')
+            return f"It's {temp}°C in {location}! Here are some great options for you!"
+        else:
+            return "Here are some great options for you!"
+
+def generate_smart_response(user_message, weather_info):
+    try:
+        prompt = f"""
+        You are SmartGear AI.
+
+        User query: "{user_message}"
+
+        Weather:
+        Temperature: {weather_info.get('temperature', 'unknown')}°C
+        Condition: {weather_info.get('description', '')}
+
+        Generate a short, natural response like a human stylist.
+
+        Rules:
+        - Mention temperature
+        - Suggest clothing type
+        - Keep it conversational (max 2-3 lines)
+        """
+
+        response = model.generate_content(prompt)
+        return response.text
+
+    except:
+        return "Here are some recommendations for your trip."
+
+def get_ai_response_with_temp(user_message, weather_info):
+    """Fallback AI response that includes temperature when Gemini fails"""
+    try:
+        user_message_lower = user_message.lower().strip()
+        name = user_context.get("name", "")
+        temp = weather_info.get('temperature', 'unknown')
+        location = weather_info.get('location', 'your destination')
+        
+        # Simple temperature-aware responses
+        if temp != 'unknown':
+            if temp < 10:
+                response = f"Hey {name if name else 'there'}! It's quite cold in {location} right now ({temp}°C). I'd recommend warm layers like jackets and thermals. Let me find some great options for you!"
+            elif temp < 20:
+                response = f"Hi {name if name else 'there'}! It's cool in {location} ({temp}°C). You'll want something comfortable like light jackets or sweaters. Here are some suggestions!"
+            elif temp > 30:
+                response = f"Hey {name if name else 'there'}! It's quite hot in {location} ({temp}°C). You'll want something light and breathable. Let me show you some great options!"
+            else:
+                response = f"Hi {name if name else 'there'}! The weather in {location} is nice ({temp}°C). Here are some perfect products for you!"
+        else:
+            response = f"Hey {name if name else 'there'}! I found some great options for {location}. Let me show you what I recommend!"
+        
+        return response
+        
+    except Exception as e:
+        print(f"Fallback response error: {e}")
+        return f"Here are some great options for your trip to {weather_info.get('location', 'your destination')}!"
 
 def get_ai_response(user_message):
     try:
         user_message_lower = user_message.lower().strip()
         
-        # Handle greetings with AI-generated responses
+        # Extract and store user name
+        name = extract_name(user_message)
+        if name:
+            user_context['name'] = name
+            return f"Hey {name} 👋 Nice to meet you! Are you planning a trip or looking for something specific?"
+        
+        # Handle greetings with personalization
         greetings = ['hey', 'hello', 'hi there','good morning', 'good afternoon', 'good evening']
         if any(greeting in user_message_lower for greeting in greetings):
+            name = user_context.get("name", "")
             try:
                 # Use Gemini to generate contextual greeting response
-                gemini_response = model.generate_content(f"Generate a friendly, personalized greeting response for SmartGear AI assistant. The user said: '{user_message}'. Keep it brief and mention that I can help with weather-based product recommendations.")
+                gemini_response = model.generate_content(f"Generate a friendly, personalized greeting response for SmartGear AI assistant. The user said: '{user_message}'. User name: {name}. Keep it brief and mention that I can help with weather-based product recommendations.")
                 return gemini_response.text
             except:
                 # Fallback to static responses if AI fails
-                responses = [
-                    "Hello! I'm your SmartGear assistant. I can help you find perfect products based on weather and location! Just tell me where you're going.",
-                    "Hi there! I'm your smart shopping assistant. I can check weather conditions and suggest the perfect gear for your trip!",
-                    "Hey! Welcome to SmartGear. Tell me about your travel plans and I'll recommend the best products for the weather!"
-                ]
+                if name:
+                    responses = [
+                        f"Hello {name}! I'm your SmartGear assistant. I can help you find perfect products based on weather and location! Just tell me where you're going.",
+                        f"Hi {name}! I'm your smart shopping assistant. I can check weather conditions and suggest the perfect gear for your trip!",
+                        f"Hey {name}! Welcome to SmartGear. Tell me about your travel plans and I'll recommend the best products for the weather!"
+                    ]
+                else:
+                    responses = [
+                        "Hello! I'm your SmartGear assistant. I can help you find perfect products based on weather and location! Just tell me where you're going.",
+                        "Hi there! I'm your smart shopping assistant. I can check weather conditions and suggest the perfect gear for your trip!",
+                        "Hey! Welcome to SmartGear. Tell me about your travel plans and I'll recommend the best products for the weather!"
+                    ]
                 import random
                 return random.choice(responses)
         
@@ -454,71 +578,33 @@ Just say where you're going and what you plan to do!"""
         is_travel_query = any(indicator in user_message_lower for indicator in travel_indicators)
         is_location_request = any(indicator in user_message_lower for indicator in location_request_indicators)
         
-        # Check if this is a location-based request (either travel or direct location request)
-        if locations and (is_travel_query or is_location_request):
-            # Get weather for the mentioned location
-            location = locations[0]  # Use first mentioned location
+        # Use AI-driven intent extraction for intelligent processing
+        intent = extract_intent_with_gemini(user_message)
+        
+        if intent and intent.get("location"):
+            location = intent["location"]
             weather_info = get_weather_info(location)
             
             if weather_info['success']:
-                # Get weather-based product recommendations
-                weather_products = get_weather_based_products(weather_info, user_message)
-                
-                response = f"Weather Update for {weather_info['location'].title()}:\n"
-                response += f"Temperature: {weather_info['temperature']:.1f}°C\n\n"
-                
-                response += f"Recommended Products for {location.title()}:\n\n"
-                
-                if weather_products:
-                    for i, product in enumerate(weather_products[:6], 1):
-                        response += f"{i}. {product.name}\n"
+                try:
+                    # Get products for this location
+                    products = get_consistent_products(user_message)
                     
-                    if len(weather_products) > 6:
-                        response += f"And {len(weather_products) - 6} more products available."
-                else:
-                    response += "I'm checking for the best products for these weather conditions. Let me find some alternatives for you."
-                    # Fallback to regular search
-                    fallback_products = find_relevant_products(user_message)
-                    if fallback_products:
-                        response += "\n\nHere are some alternatives:\n\n"
-                        for i, product in enumerate(fallback_products[:4], 1):
-                            response += f"{i}. {product.name}\n"
-                
-                return response
+                    # Generate natural conversational response
+                    return generate_chat_response(user_message, weather_info, products)
+                except Exception as e:
+                    # Gemini chat failed, use fallback with temperature
+                    print(f"Gemini chat failed in get_ai_response: {e}")
+                    return get_ai_response_with_temp(user_message, weather_info)
             else:
                 # Weather API failed, but we still have location
-                response = f"Here are some great products for your needs:\n\n"
-                
-                location_products = find_relevant_products(user_message)
-                if location_products:
-                    for i, product in enumerate(location_products[:5], 1):
-                        response += f"{i}. {product.name}\n"
-                else:
-                    response += "Let me help you find products. Try mentioning specific activities like 'hiking', 'beach', or 'casual'."
-                
-                return response
-                
-                response = f"Weather Update for {weather_info['location'].title()}:\n"
-                response += f"Temperature: {weather_info['temperature']:.1f}°C\n\n"
-                
-                response += f"Recommended Products for {location.title()}:\n\n"
-                
-                if weather_products:
-                    for i, product in enumerate(weather_products[:6], 1):
-                        response += f"{i}. {product.name}\n"
-                    
-                    if len(weather_products) > 6:
-                        response += f"And {len(weather_products) - 6} more products available."
-                else:
-                    response += "I'm checking for the best products for these weather conditions. Let me find some alternatives for you."
-                    # Fallback to regular search
-                    fallback_products = find_relevant_products(user_message)
-                    if fallback_products:
-                        response += "\n\nHere are some alternatives:\n\n"
-                        for i, product in enumerate(fallback_products[:4], 1):
-                            response += f"{i}. {product.name}\n"
-                
-                return response
+                name = user_context.get("name", "")
+                return f"{name if name else 'There'}, I found some great options for {location.title()}. What type of activity are you planning there?"
+        
+        # Add follow-up logic for specific locations
+        if "kashmir" in user_message.lower():
+            name = user_context.get("name", "")
+            return f"{name if name else 'It'}'s quite cold there ❄️ Do you need heavy winter wear or something lightweight for travel?"
         
         # Regular product search with enhanced matching
         relevant_products = find_relevant_products(user_message)
