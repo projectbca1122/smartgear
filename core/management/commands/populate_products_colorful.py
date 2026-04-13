@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from core.models import Product
 
 class Command(BaseCommand):
-    help = 'Populate database with sample clothing products'
+    help = 'Populate database with colorful sample clothing products'
 
     def handle(self, *args, **options):
         products = [
@@ -12,7 +12,7 @@ class Command(BaseCommand):
                 'category': 'Outerwear',
                 'price': 89.99,
                 'suitable_locations': 'kashmir, ladakh, manali, winter, cold, snow, mountain, extreme cold',
-                'image_url': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.2'
+                'image_url': 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3'
             },
             {
                 'name': 'Beach Shorts for Goa',
@@ -20,7 +20,7 @@ class Command(BaseCommand):
                 'category': 'Bottoms',
                 'price': 29.99,
                 'suitable_locations': 'goa, beach, swimming, summer, casual',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Gym Workout T-Shirt',
@@ -28,7 +28,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 24.99,
                 'suitable_locations': 'gym, workout, fitness, running, training',
-                'image_url': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Warm Hiking Cargo Pants',
@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 'category': 'Bottoms',
                 'price': 54.99,
                 'suitable_locations': 'kashmir, manali, ladakh, winter, cold, snow, mountain, trekking',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Party Dress',
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 'category': 'Formal',
                 'price': 79.99,
                 'suitable_locations': 'party, formal, evening, wedding, celebration',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Office Casual Shirt',
@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 'category': 'Formal',
                 'price': 39.99,
                 'suitable_locations': 'office, business, formal, work, meeting',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Sports Running Shoes',
@@ -60,7 +60,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 69.99,
                 'suitable_locations': 'running, gym, workout, fitness, training',
-                'image_url': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3'
+                'image_url': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Swimwear for Beach',
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 'category': 'Swimwear',
                 'price': 34.99,
                 'suitable_locations': 'beach, swimming, goa, pool, summer',
-                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Casual Jeans',
@@ -76,7 +76,7 @@ class Command(BaseCommand):
                 'category': 'Bottoms',
                 'price': 49.99,
                 'suitable_locations': 'casual, city, everyday, informal, travel',
-                'image_url': 'https://images.unsplash.com/photo-1542272604-787c3835535a?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3'
+                'image_url': 'https://images.unsplash.com/photo-1542272604-787c3835535a?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Thermal Wear for Mountains',
@@ -84,16 +84,15 @@ class Command(BaseCommand):
                 'category': 'Innerwear',
                 'price': 44.99,
                 'suitable_locations': 'manali, mountain, winter, cold, hiking',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
-            # Additional 30 products
             {
                 'name': 'Summer Cotton Shirt',
                 'description': 'Lightweight cotton shirt perfect for summer days and casual outings.',
                 'category': 'Tops',
                 'price': 34.99,
                 'suitable_locations': 'summer, casual, beach, goa, city',
-                'image_url': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Yoga Leggings',
@@ -101,7 +100,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 42.99,
                 'suitable_locations': 'yoga, gym, workout, fitness, training',
-                'image_url': 'https://images.unsplash.com/photo-1540497077202-7243c69f916a?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1540497077202-7243c69f916a?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Business Suit',
@@ -109,7 +108,7 @@ class Command(BaseCommand):
                 'category': 'Formal',
                 'price': 199.99,
                 'suitable_locations': 'office, business, formal, meeting, corporate',
-                'image_url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Hiking Boots',
@@ -117,7 +116,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 89.99,
                 'suitable_locations': 'hiking, trekking, mountain, outdoor, camping',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Beach Sandals',
@@ -125,7 +124,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 24.99,
                 'suitable_locations': 'beach, goa, summer, casual, vacation',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Winter Sweater',
@@ -133,7 +132,7 @@ class Command(BaseCommand):
                 'category': 'Outerwear',
                 'price': 59.99,
                 'suitable_locations': 'winter, manali, mountain, cold, casual',
-                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Sports Shorts',
@@ -141,7 +140,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 27.99,
                 'suitable_locations': 'gym, workout, sports, fitness, training',
-                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Formal Trousers',
@@ -149,7 +148,7 @@ class Command(BaseCommand):
                 'category': 'Formal',
                 'price': 64.99,
                 'suitable_locations': 'office, business, formal, meeting, corporate',
-                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1594634312652-30096f5e2fb0?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Casual Hoodie',
@@ -157,7 +156,7 @@ class Command(BaseCommand):
                 'category': 'Outerwear',
                 'price': 44.99,
                 'suitable_locations': 'casual, city, everyday, travel, informal',
-                'image_url': 'https://images.unsplash.com/photo-1556821841-5bf76a0fa6ce?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1556821841-5bf76a0fa6ce?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Running Tank Top',
@@ -165,7 +164,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 22.99,
                 'suitable_locations': 'running, gym, workout, fitness, training',
-                'image_url': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Beach Cover-up',
@@ -173,7 +172,7 @@ class Command(BaseCommand):
                 'category': 'Swimwear',
                 'price': 38.99,
                 'suitable_locations': 'beach, goa, swimming, pool, summer',
-                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Denim Jacket',
@@ -181,7 +180,7 @@ class Command(BaseCommand):
                 'category': 'Outerwear',
                 'price': 74.99,
                 'suitable_locations': 'casual, city, everyday, travel, informal',
-                'image_url': 'https://images.unsplash.com/photo-1551488830-9fcef1c09744?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1551488830-9fcef1c09744?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Gym Shorts',
@@ -189,7 +188,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 31.99,
                 'suitable_locations': 'gym, workout, fitness, training, sports',
-                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Formal Blazer',
@@ -197,7 +196,7 @@ class Command(BaseCommand):
                 'category': 'Formal',
                 'price': 89.99,
                 'suitable_locations': 'office, business, formal, meeting, corporate',
-                'image_url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Mountain Backpack',
@@ -205,7 +204,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 54.99,
                 'suitable_locations': 'hiking, mountain, trekking, camping, outdoor',
-                'image_url': 'https://images.unsplash.com/photo-1553062407-f606588648ec?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1553062407-f606588648ec?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Summer Dress',
@@ -213,7 +212,7 @@ class Command(BaseCommand):
                 'category': 'Casual',
                 'price': 49.99,
                 'suitable_locations': 'summer, beach, goa, vacation, casual',
-                'image_url': 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Sports Watch',
@@ -221,7 +220,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 79.99,
                 'suitable_locations': 'gym, workout, fitness, running, training',
-                'image_url': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Winter Gloves',
@@ -229,7 +228,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 24.99,
                 'suitable_locations': 'winter, manali, mountain, cold, hiking',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Casual Sneakers',
@@ -237,7 +236,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 54.99,
                 'suitable_locations': 'casual, city, everyday, travel, informal',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Yoga Mat',
@@ -245,7 +244,7 @@ class Command(BaseCommand):
                 'category': 'Activewear',
                 'price': 29.99,
                 'suitable_locations': 'yoga, gym, workout, fitness, home',
-                'image_url': 'https://images.unsplash.com/photo-1540497077202-7243c69f916a?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1540497077202-7243c69f916a?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Beach Hat',
@@ -253,7 +252,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 19.99,
                 'suitable_locations': 'beach, goa, summer, vacation, outdoor',
-                'image_url': 'https://images.unsplash.com/photo-1525353628369-b0e5c49b8d1e?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1525353628369-b0e5c49b8d1e?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Winter Scarf',
@@ -261,7 +260,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 29.99,
                 'suitable_locations': 'winter, manali, mountain, cold, casual',
-                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Sports Sunglasses',
@@ -269,7 +268,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 44.99,
                 'suitable_locations': 'beach, goa, outdoor, sports, summer',
-                'image_url': 'https://images.unsplash.com/photo-1473496169904-658ba79944bb?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1473496169904-658ba79944bb?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Gym Bag',
@@ -277,7 +276,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 39.99,
                 'suitable_locations': 'gym, workout, fitness, training, sports',
-                'image_url': 'https://images.unsplash.com/photo-1553062407-f606588648ec?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1553062407-f606588648ec?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Summer Shorts',
@@ -285,7 +284,7 @@ class Command(BaseCommand):
                 'category': 'Bottoms',
                 'price': 32.99,
                 'suitable_locations': 'summer, beach, goa, casual, vacation',
-                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1586790170087-2f1bbad7c8c7?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Formal Shoes',
@@ -293,7 +292,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 94.99,
                 'suitable_locations': 'office, business, formal, meeting, corporate',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Casual Cap',
@@ -301,7 +300,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 24.99,
                 'suitable_locations': 'casual, outdoor, summer, city, everyday',
-                'image_url': 'https://images.unsplash.com/photo-1525353628369-b0e5c49b8d1e?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1525353628369-b0e5c49b8d1e?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Winter Boots',
@@ -309,7 +308,7 @@ class Command(BaseCommand):
                 'category': 'Footwear',
                 'price': 84.99,
                 'suitable_locations': 'winter, manali, mountain, cold, outdoor',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Gym Water Bottle',
@@ -317,7 +316,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 19.99,
                 'suitable_locations': 'gym, workout, fitness, training, sports',
-                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             },
             {
                 'name': 'Beach Towel',
@@ -325,7 +324,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 22.99,
                 'suitable_locations': 'beach, goa, swimming, pool, summer',
-                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.4&con=1.1'
             },
             {
                 'name': 'Winter Beanie',
@@ -333,7 +332,7 @@ class Command(BaseCommand):
                 'category': 'Accessories',
                 'price': 27.99,
                 'suitable_locations': 'winter, manali, mountain, cold, casual',
-                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format'
+                'image_url': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=300&h=300&fit=crop&crop=entropy&auto=format&sat=1.3&con=1.1'
             }
         ]
 
@@ -346,13 +345,16 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
                 self.stdout.write(
-                    self.style.SUCCESS(f'Created product: {product.name}')
+                    self.style.SUCCESS(f'Created colorful product: {product.name}')
                 )
             else:
+                # Update existing product with colorful image
+                product.image_url = product_data['image_url']
+                product.save()
                 self.stdout.write(
-                    self.style.WARNING(f'Product already exists: {product.name}')
+                    self.style.WARNING(f'Updated product with colorful image: {product.name}')
                 )
 
         self.stdout.write(
-            self.style.SUCCESS(f'Successfully created {created_count} new products!')
+            self.style.SUCCESS(f'Successfully created {created_count} new colorful products and updated existing ones!')
         )

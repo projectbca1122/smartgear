@@ -369,7 +369,7 @@
             height: 100%;
             object-fit: contain;
             transition: transform 0.4s ease;
-            filter: grayscale(100%);
+            /* filter: grayscale(100%); */
         }
 
         .product-card:hover .product-image {
@@ -625,7 +625,7 @@
             border-radius: 2px;
             object-fit: cover;
             background: var(--gray-800);
-            filter: grayscale(100%);
+            /* filter: grayscale(100%); */
             border: 1px solid var(--gray-800);
         }
 
@@ -899,7 +899,7 @@
             width: 100%;
             height: 380px;
             object-fit: contain;
-            filter: grayscale(100%);
+            /* filter: grayscale(100%); */
             padding: 24px;
         }
 
@@ -1059,7 +1059,7 @@
             border-radius: 2px;
             margin-right: 14px;
             background: var(--gray-800);
-            filter: grayscale(100%);
+            /* filter: grayscale(100%); */
             border: 1px solid var(--gray-800);
         }
 
@@ -1956,7 +1956,7 @@
             .then(data => {
                 document.getElementById('loadingIndicator').style.display = 'none';
                 if (data.error) addMessage('Error: ' + data.error, 'ai');
-                else { addMessage(data.ai_response, 'ai', data.products); displayRecommendedProducts(data.products); speakText(data.ai_response); }
+                else { addMessage(data.ai_response, 'ai', data.products); displayRecommendedProducts(data.products, data.temperature); speakText(data.ai_response); }
             })
             .catch(() => { document.getElementById('loadingIndicator').style.display = 'none'; addMessage('An error occurred. Please try again.', 'ai'); });
         }
@@ -2077,10 +2077,16 @@
             .catch(console.error);
         }
 
-        function displayRecommendedProducts(products) {
+        function displayRecommendedProducts(products, temperature = null) {
             if (!products || products.length === 0) { document.getElementById('recommendedProductsSection').style.display = 'none'; return; }
             const grid = document.getElementById('recommendedProductsGrid');
             document.getElementById('recommendedCount').textContent = `${products.length} items`;
+            
+            // Update section title with temperature if available
+            const sectionTitle = document.querySelector('.section-title');
+            if (temperature !== null && sectionTitle) {
+                sectionTitle.textContent = `Recommended For You (${temperature}°C)`;
+            }
             grid.innerHTML = '';
             products.forEach((p, i) => {
                 productCache[p.id] = p;
