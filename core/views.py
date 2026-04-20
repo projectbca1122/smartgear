@@ -1,6 +1,5 @@
 import json
 import speech_recognition as sr
-import pyttsx3
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -24,11 +23,21 @@ configure(api_key=API_KEY)
 model = GenerativeModel("gemini-2.5-flash")
 
 # Weather API configuration
-WEATHER_API_KEY = "e0f58f02ae07966898ecf53c37dca217"  # You'll need to get this from OpenWeatherMap
+WEATHER_API_KEY = "e0f58f02ae07966898ecf53c37dca217"
 WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
-# Initialize text-to-speech engine
-engine = pyttsx3.init()
+# Text-to-speech engine (lazy initialization)
+_tts_engine = None
+
+def _get_tts_engine():
+    global _tts_engine
+    if _tts_engine is None:
+        try:
+            import pyttsx3
+            _tts_engine = pyttsx3.init()
+        except Exception:
+            pass
+    return _tts_engine
 
 # Conversation memory and context
 user_context = {
@@ -1084,8 +1093,10 @@ def text_to_speech(request):
             return JsonResponse({'error': 'No text provided'}, status=400)
         
         # Convert text to speech
-        engine.say(text)
-        engine.runAndWait()
+        tts = _get_tts_engine()
+        if tts:
+            tts.say(text)
+            tts.runAndWait()
         
         return JsonResponse({'success': True})
     
