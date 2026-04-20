@@ -1,11 +1,33 @@
 from django.db import models
 
 class Product(models.Model):
+    TEMP_CATEGORIES = [
+        ('cold', 'Cold'),
+        ('moderate', 'Moderate'),
+        ('hot', 'Hot')
+    ]
+    
+    ACTIVITY_CHOICES = [
+        ('gym', 'Gym'),
+        ('hiking', 'Hiking'),
+        ('party', 'Party'),
+        ('travel', 'Travel'),
+        ('casual', 'Casual'),
+        ('formal', 'Formal'),
+        ('beach', 'Beach'),
+        ('sports', 'Sports'),
+        ('business', 'Business'),
+        ('outdoor', 'Outdoor')
+    ]
+    
     name = models.CharField(max_length=200)
     description = models.TextField()
     category = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    activity_tag = models.CharField(max_length=20, choices=ACTIVITY_CHOICES, blank=True, null=True, help_text="Primary activity this product is designed for")
+    temp_category = models.CharField(max_length=10, choices=TEMP_CATEGORIES, blank=True, null=True, help_text="Temperature category this product is suitable for")
     suitable_locations = models.TextField(help_text="Comma-separated locations where this product is suitable")
+    priority_score = models.IntegerField(default=0, help_text="Optional boost score for ranking")
     image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

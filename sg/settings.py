@@ -30,7 +30,9 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'departure-hearing-chorus-enhancements.trycloudflare.com',
-    '*.trycloudflare.com'
+    '*.trycloudflare.com',
+    'a585-2405-201-4042-a868-b854-7de9-e390-74cc.ngrok-free.app',
+    '9e34-2405-201-4042-a868-3c48-5d57-6af6-847d.ngrok-free.app'
 ]
 
 
@@ -142,6 +144,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS settings
 CORS_ALLOWED_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF Trusted Origins for ngrok
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'https://9e34-2405-201-4042-a868-3c48-5d57-6af6-847d.ngrok-free.app'
+]
 
 # Static files configuration
 STATICFILES_DIRS = [

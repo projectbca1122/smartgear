@@ -19,7 +19,7 @@ import re
 from datetime import timedelta, datetime
 
 # Configure Gemini API
-API_KEY = "AIzaSyCpTKtmwqB5GD9Yt7DauUstR4WvtAAzIwk"
+API_KEY = "AIzaSyCZ9UYXNVkEBpGQO8mfLe_DpBs_sH5yWaM"
 configure(api_key=API_KEY)
 model = GenerativeModel("gemini-2.5-flash")
 
@@ -31,7 +31,371 @@ WEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 engine = pyttsx3.init()
 
 # Conversation memory and context
-user_context = {}
+user_context = {
+    "name": None,
+    "last_location": None,
+    "last_activity": None
+}
+
+# STOPWORDS - Remove useless words that match everything
+STOPWORDS = {
+    "i", "am", "is", "are", "was", "were", "to", "the", "a", "an", "and", "or",
+    "going", "want", "need", "for", "in", "on", "me", "my", "we", "you",
+    "at", "of", "with", "from", "by", "as", "be", "have", "has", "had"
+}
+
+# LAYER 1: RULE ENGINE (NO AI)
+INTENT_MAP = {
+    "activity": ["gym", "hiking", "party", "travel", "casual", "formal", "beach", "sports", "business", "outdoor", "trekking", "swimming", "workout", "running", "camping", "yoga"],
+    "product_type": [
+        "shirt", "jacket", "hoodie", "shoes", "jeans", "pants", "dress", "shorts", 
+        "top", "sweater", "t-shirt", "trousers", "coat", "sports wear", "ethnic wear", 
+        "sandals", "boots", "sneakers", "blazer", "suit", "kurta", "leggings", 
+        "yoga pants", "track pants", "cap", "hat", "belt", "socks", "gloves", "scarf",
+        "saree", "lehenga", "sherwani", "vest", "cardigan", "windbreaker", "raincoat"
+    ]
+}
+
+def get_clean_keywords(message):
+    """Extract meaningful keywords from message"""
+    words = message.lower().split()
+    keywords = []
+    
+    for word in words:
+        # Skip stopwords and short words
+        if word not in STOPWORDS and len(word) > 2:
+            keywords.append(word)
+    
+    return keywords
+
+def extract_intent(message):
+    """Extract intent using rules and regex (NO AI)"""
+    msg = message.lower()
+    
+    # Extract activity
+    activity = None
+    for act in INTENT_MAP["activity"]:
+        if act in msg:
+            activity = act
+            break
+    
+    # Extract product type
+    product_type = None
+    for prod in INTENT_MAP["product_type"]:
+        if prod in msg:
+            product_type = prod
+            break
+    
+    # Extract location
+    location = extract_location_from_message(message)
+    
+    intent = {
+        "activity": activity,
+        "product_type": product_type,
+        "location": location[0] if location else None
+    }
+    
+    # Update context
+    if intent["location"]:
+        user_context["last_location"] = intent["location"]
+    if intent["activity"]:
+        user_context["last_activity"] = intent["activity"]
+    
+    return intent
+
+# LAYER 2: TEMPERATURE CATEGORY MAPPING
+def map_temp_category(temp):
+    """Convert temperature to category"""
+    if temp < 12:
+        return "cold"
+    elif temp < 25:
+        return "moderate"
+    else:
+        return "hot"
+
+# LAYER 3: STRICT SCORING ENGINE
+def score_product(product, intent, temp_category, user_message=""):
+    """Score product based on intent and temperature (NO AI)"""
+    score = 0
+    
+    # TEMP MATCH (HIGHEST PRIORITY)
+    if temp_category and product.temp_category and temp_category == product.temp_category:
+        score += 50
+        print(f"DEBUG: TEMP MATCH! {temp_category} == {product.temp_category}")
+    
+    # CLEAN WORD-LEVEL PRODUCT NAME MATCHING
+    if user_message:
+        keywords = get_clean_keywords(user_message)
+        product_name_words = product.name.lower().split()
+        
+        # EXACT WORD MATCHING ONLY
+        for keyword in keywords:
+            if keyword in product_name_words:  # Exact match only
+                score += 30
+                print(f"DEBUG: EXACT WORD MATCH! '{keyword}' matches in {product.name}")
+    
+    # PRODUCT TYPE (high weight)
+    if intent["product_type"] and intent["product_type"] in product.name.lower():
+        score += 40
+        print(f"DEBUG: PRODUCT TYPE MATCH! {intent['product_type']} in {product.name}")
+    
+    # ACTIVITY (medium weight)
+    if intent["activity"]:
+        if product.activity_tag and intent["activity"] == product.activity_tag:
+            score += 30
+            print(f"DEBUG: ACTIVITY MATCH! {intent['activity']} == {product.activity_tag}")
+        elif intent["activity"] in product.description.lower():
+            score += 20
+        elif intent["activity"] in product.name.lower():
+            score += 15
+    
+    # LOCATION relevance (medium weight)
+    if intent["location"] and intent["location"] in product.suitable_locations.lower():
+        score += 20
+        print(f"DEBUG: LOCATION MATCH! {intent['location']} in {product.suitable_locations}")
+    
+    # Priority boost (optional)
+    if product.priority_score:
+        score += product.priority_score
+        print(f"DEBUG: PRIORITY BOOST! +{product.priority_score}")
+    
+    return score
+
+def simple_search_products(message):
+    """Simple search: find products containing search words in their names (flexible matching)"""
+    print(f"DEBUG: Simple search for: '{message}'")
+    
+    # Clean the message: remove punctuation and convert to lowercase
+    import string
+    cleaned_message = message.lower().translate(str.maketrans('', '', string.punctuation))
+    words = cleaned_message.split()
+    
+    # Remove common words that aren't product names
+    stop_words = {"i", "want", "need", "show", "me", "get", "give", "looking", "for", "the", "a", "an", "and", "or", "to", "at", "in", "on", "with", "from", "by", "as", "be", "have", "has", "had", "am", "is", "are", "was", "were"}
+    search_words = [word for word in words if word not in stop_words and len(word) > 1]
+    
+    print(f"DEBUG: Search words: {search_words}")
+    
+    if not search_words:
+        return None
+    
+    # Create variations of search words (singular/plural)
+    all_search_variations = []
+    for word in search_words:
+        all_search_variations.append(word)
+        
+        # Add singular version if word is plural
+        if word.endswith('s') and len(word) > 3:
+            singular = word[:-1]  # Remove 's' from end
+            if singular not in all_search_variations:
+                all_search_variations.append(singular)
+        
+        # Add plural version if word is singular
+        elif not word.endswith('s') and len(word) > 2:
+            plural = word + 's'  # Add 's' to end
+            if plural not in all_search_variations:
+                all_search_variations.append(plural)
+    
+    print(f"DEBUG: All search variations: {all_search_variations}")
+    
+    # Find products that contain ANY of the search variations in their name
+    matched_products = {}
+    for word in all_search_variations:
+        products = Product.objects.filter(name__icontains=word)
+        for product in products:
+            if product not in matched_products:
+                matched_products[product] = 0  # Initialize score
+            matched_products[product] += 1  # Increment score for each match
+    
+    if matched_products:
+        # Sort by number of matches (highest first)
+        sorted_products = sorted(matched_products.items(), key=lambda x: x[1], reverse=True)
+        result_products = [product for product, score in sorted_products]
+        
+        print(f"DEBUG: Found {len(result_products)} matching products: {[p.name for p in result_products]}")
+        return result_products
+    
+    return None
+
+def get_best_products(message):
+    """Get best products - try simple search first, then fallback to complex logic"""
+    print(f"DEBUG: Processing message: '{message}'")
+    
+    # PRIORITY 0: Try simple direct search first
+    simple_results = simple_search_products(message)
+    if simple_results:
+        print(f"DEBUG: Simple search found products, returning them")
+        return simple_results[:5]  # Return up to 5 matching products
+    
+    # PRIORITY 1: Check for "I want X" patterns - direct product name matching
+    direct_match_products = check_direct_product_match(message)
+    if direct_match_products:
+        print(f"DEBUG: Direct product match found: {[p.name for p in direct_match_products]}")
+        # Return only the top 3 matching products for direct searches
+        return direct_match_products[:3]
+    
+    # LAYER 1: Extract intent (RULES ONLY)
+    intent = extract_intent(message)
+    print(f"DEBUG: Extracted intent: {intent}")
+    
+    # AI FALLBACK: Only activate if rule system finds NOTHING
+    has_any_intent = intent["product_type"] or intent["activity"] or intent["location"]
+    if not has_any_intent:
+        print("DEBUG: No intent found, calling AI fallback")
+        ai_intent = extract_intent_with_gemini(message)
+        if ai_intent:
+            # Merge AI intent with rule intent
+            intent.update({k: v for k, v in ai_intent.items() if v})
+            print(f"DEBUG: Merged AI intent: {intent}")
+    else:
+        print("DEBUG: Intent extracted successfully, skipping AI")
+    
+    # LAYER 2: Get weather and temperature category
+    weather = None
+    temp_category = None
+    if intent["location"]:
+        weather = get_weather_info(intent["location"])
+        if weather and weather.get('success'):
+            temp_category = map_temp_category(weather["temperature"])
+            print(f"DEBUG: Weather: {weather['temperature']}°C -> {temp_category}")
+    
+    # HANDLE "ONLY LOCATION" CASE (PURE WEATHER-BASED)
+    if not intent["activity"] and not intent["product_type"] and temp_category:
+        print(f"DEBUG: Pure weather-based recommendation for {temp_category}")
+        weather_products = Product.objects.filter(temp_category=temp_category)
+        print(f"DEBUG: Found {weather_products.count()} weather-matched products")
+        
+        # Get random 10 products from the temperature category
+        weather_products_list = list(weather_products)
+        random.shuffle(weather_products_list)
+        random_products = weather_products_list[:10]
+        print(f"DEBUG: Returning {len(random_products)} random products from {temp_category} category")
+        return random_products
+    
+    # GET ALL PRODUCTS AND SCORE THEM
+    products = Product.objects.all()
+    print(f"DEBUG: Total products to score: {products.count()}")
+    
+    scored = []
+    
+    for p in products:
+        s = score_product(p, intent, temp_category, message)
+        print(f"DEBUG: Product '{p.name}' - Score: {s}")
+        
+        # ACCEPT SCORES - realistic threshold
+        if s >= 30:
+            scored.append((s, p))
+            print(f"DEBUG: ACCEPTED: '{p.name}' with score {s}")
+    
+    print(f"DEBUG: Total accepted products: {len(scored)}")
+    
+    # If no products scored, return top 10 by any score
+    if not scored:
+        print("DEBUG: No products scored, returning top 10 anyway")
+        for p in products:
+            s = score_product(p, intent, temp_category, message)
+            scored.append((s, p))
+    
+    # Sort by score (highest first) and return top 10
+    scored.sort(reverse=True, key=lambda x: x[0])
+    
+    result = [p for _, p in scored[:10]]
+    print(f"DEBUG: Returning {len(result)} products: {[p.name for p in result]}")
+    return result
+
+def check_direct_product_match(message):
+    """Check for direct product name matches in 'I want X' patterns or direct product searches"""
+    msg = message.lower()
+    
+    # Check for "I want X" patterns
+    want_patterns = ["i want", "i need", "show me", "get me", "give me", "looking for"]
+    
+    for pattern in want_patterns:
+        if pattern in msg:
+            # Extract the product name after the pattern
+            product_part = msg.split(pattern, 1)[1].strip()
+            if product_part:
+                return find_products_by_keywords(product_part)
+    
+    # Also check for direct product searches without patterns (like "water bottle", "jacket", etc.)
+    # Only if the message is short and seems like a product search
+    words = msg.split()
+    if len(words) <= 4:  # Short messages are likely direct product searches
+        # Skip common non-product words
+        non_product_words = {"hello", "hi", "hey", "thanks", "bye", "help", "who", "what", "where", "when", "how", "why", "are", "is", "am", "the", "a", "an"}
+        filtered_words = [w for w in words if w not in non_product_words and len(w) > 2]
+        
+        if filtered_words:
+            # Check if any words match product types or categories
+            product_indicators = ["shirt", "pants", "shoes", "jacket", "dress", "bottle", "bag", "watch", "wallet", "hat", "cap", "belt", "socks", "gloves", "scarf"]
+            if any(word in product_indicators for word in filtered_words):
+                return find_products_by_keywords(msg)
+    
+    return None
+
+def find_products_by_keywords(search_text):
+    """Find products by keywords with precise matching"""
+    keywords = get_clean_keywords(search_text)
+    print(f"DEBUG: Searching for keywords: {keywords}")
+    
+    if not keywords:
+        return None
+    
+    matched_products = {}
+    
+    # First, try exact phrase matching
+    search_lower = search_text.lower()
+    for product in Product.objects.all():
+        product_name_lower = product.name.lower()
+        
+        # Exact phrase match in product name (highest priority)
+        if search_lower in product_name_lower:
+            matched_products[product] = 100  # Very high score for exact phrase
+            continue
+        
+        # Check individual keywords with higher precision
+        score = 0
+        for keyword in keywords:
+            keyword_lower = keyword.lower()
+            
+            # Exact word match in product name (high priority)
+            if keyword_lower in product_name_lower:
+                # Bonus for exact word matches
+                if keyword_lower == product_name_lower.split()[-1]:  # Last word match
+                    score += 30
+                else:
+                    score += 20
+            
+            # Partial match in product name (lower priority)
+            elif keyword_lower in product_name_lower:
+                score += 5
+            
+            # Description match (much lower priority)
+            elif keyword_lower in product.description.lower():
+                score += 2
+            
+            # Category match (lowest priority)
+            elif keyword_lower in product.category.lower():
+                score += 1
+        
+        if score > 0:
+            matched_products[product] = score
+    
+    if matched_products:
+        # Sort by relevance score
+        sorted_products = sorted(matched_products.items(), key=lambda x: x[1], reverse=True)
+        result_products = [product for product, score in sorted_products]
+        
+        # If we have an exact phrase match, return only the top 1-2
+        top_score = sorted_products[0][1]
+        if top_score >= 100:  # Exact phrase match
+            print(f"DEBUG: Exact phrase match found: {result_products[0].name}")
+            return result_products[:2]
+        
+        print(f"DEBUG: Direct match products found: {[p.name for p in result_products[:3]]}")
+        return result_products[:3]  # Return top 3 most relevant matches
+    
+    return None
 
 def extract_name(message):
     """Extract user name from message"""
@@ -145,22 +509,28 @@ def get_weather_info(location):
         return {'success': False, 'error': str(e)}
 
 def extract_intent_with_gemini(user_message):
+    """AI fallback intent extraction - ONLY used when rule system fails"""
     try:
-        prompt = f"""
-        You are an AI fashion assistant.
+        prompt = f"""You are a strict JSON extractor.
 
-        Extract structured data from this user query:
-        "{user_message}"
+Extract intent from user message.
 
-        Return ONLY JSON (no explanation):
+Return ONLY JSON:
 
-        {{
-            "location": "",
-            "activity": "",
-            "product_type": "",
-            "temperature_preference": "hot/cold/moderate"
-        }}
-        """
+{{
+  "location": "",
+  "activity": "",
+  "product_type": "",
+  "temperature_preference": "hot|cold|moderate"
+}}
+
+Rules:
+- Do NOT guess randomly
+- Leave fields empty if not clear
+- Be precise and minimal
+
+User message: "{user_message}"
+"""
 
         response = model.generate_content(prompt)
 
@@ -172,7 +542,7 @@ def extract_intent_with_gemini(user_message):
         return json.loads(text)
 
     except Exception as e:
-        print("Gemini error:", e)
+        print("Gemini fallback error:", e)
         return None
 
 def extract_location_from_message(message):
@@ -290,8 +660,8 @@ def voice_assistant(request):
         if locations:
             weather_info = get_weather_info(locations[0])
         
-        # Get products using consistent logic
-        products = get_consistent_products(user_message)
+        # Get products using new 3-layer architecture
+        products = get_best_products(user_message)
         
         # Generate AI response with weather context
         if weather_info and weather_info.get('success'):
@@ -307,9 +677,20 @@ def voice_assistant(request):
             ai_response = get_ai_response(user_message)
             temperature = None
         
+        # Get top product for highlighting
+        top_product = products[0] if products else None
+        
         response_data = {
             'ai_response': ai_response,
             'temperature': temperature,
+            'highlight_product': {
+                'id': top_product.id,
+                'name': top_product.name,
+                'description': top_product.description,
+                'category': top_product.category,
+                'price': str(top_product.price),
+                'image_url': top_product.image_url
+            } if top_product else None,
             'products': [
                 {
                     'id': product.id,
@@ -382,69 +763,57 @@ def get_consistent_products(user_message):
 
 def generate_chat_response(user_message, weather_info, products):
     try:
-        name = user_context.get("name", "")
-        product_names = [p.name for p in products[:3]]
-
-        prompt = f"""
-You are a human-like fashion assistant.
-
-User: {user_message}
-Name: {name}
-
-Weather:
-{weather_info['temperature']}°C, {weather_info['description']}
-
-Products:
-{product_names}
-
-Respond like a real stylist:
-- No lists
-- No numbering
-- Talk naturally
-- Mention temperature casually
-- Recommend 1–2 items only
-- Ask a follow-up question
-
-Example tone:
-"Hey, it's quite cold there around 5°C, so I'd definitely go with something warm like a jacket or hoodie. Do you prefer something more stylish or sporty?"
-"""
-
-        res = model.generate_content(prompt)
-        return res.text
-
-    except:
-        # Check if we have weather info to include temperature
-        if weather_info and weather_info.get('success'):
-            temp = weather_info.get('temperature')
-            location = weather_info.get('location', 'your destination')
-            return f"It's {temp}°C in {location}! Here are some great options for you!"
+        # Get the actual product names that are being shown
+        if products and len(products) > 0:
+            product_names = [p.name for p in products[:5]]  # Use first 5 products
+            
+            # Create simple product list text
+            if len(product_names) == 1:
+                product_text = product_names[0]
+            elif len(product_names) == 2:
+                product_text = f"{product_names[0]} and {product_names[1]}"
+            elif len(product_names) > 2:
+                product_text = f"{', '.join(product_names[:-1])}, and {product_names[-1]}"
+            else:
+                product_text = ""
+            
+            # Simple response using ONLY the shown products
+            if weather_info and weather_info.get('success'):
+                temp = weather_info.get('temperature')
+                location = weather_info.get('location', 'your location')
+                response = f"The weather in {location} is currently {temp}°C. Here are some recommend products: {product_text}"
+            else:
+                response = f"Here are some recommend products: {product_text}"
         else:
-            return "Here are some great options for you!"
+            response = "Sorry, I couldn't find any products matching your request."
+        
+        return response
+
+    except Exception as e:
+        print(f"Error in generate_chat_response: {e}")
+        # Simple fallback
+        if products and len(products) > 0:
+            return f"Here are some recommend products: {products[0].name}"
+        else:
+            return "Sorry, I couldn't find any products matching your request."
 
 def generate_smart_response(user_message, weather_info):
     try:
-        prompt = f"""
-        You are SmartGear AI.
+        # Simple, direct response without AI
+        if weather_info and weather_info.get('success'):
+            temp = weather_info.get('temperature')
+            location = weather_info.get('location', 'your location')
+            
+            # Direct temperature statement and recommendation
+            response = f"The weather in {location} is currently {temp}°C. Here are some recommend products for you."
+        else:
+            response = "Here are some recommend products for you!"
+        
+        return response
 
-        User query: "{user_message}"
-
-        Weather:
-        Temperature: {weather_info.get('temperature', 'unknown')}°C
-        Condition: {weather_info.get('description', '')}
-
-        Generate a short, natural response like a human stylist.
-
-        Rules:
-        - Mention temperature
-        - Suggest clothing type
-        - Keep it conversational (max 2-3 lines)
-        """
-
-        response = model.generate_content(prompt)
-        return response.text
-
-    except:
-        return "Here are some recommendations for your trip."
+    except Exception as e:
+        print(f"Error in generate_smart_response: {e}")
+        return "Here are some recommend products for you!"
 
 def get_ai_response_with_temp(user_message, weather_info):
     """Fallback AI response that includes temperature when Gemini fails"""
